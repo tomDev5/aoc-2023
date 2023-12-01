@@ -1,0 +1,14 @@
+[package]
+name = "advent23"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "d1p1"
+path = "src/day01/part1.rs"
+
+[[bin]]
+name = "d1p2"
+path = "src/day01/part2.rs"
+
+[dependencies]
