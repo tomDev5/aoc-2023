@@ -13,5 +13,5 @@ fn main() {
         .map(|game| game.fold(CubeCount::default(), CubeCount::max_count))
         .map(|drawing| drawing.red * drawing.green * drawing.blue)
         .sum();
-    println!("sum: {}", sum);
+    assert_eq!(sum, 72596);
 }

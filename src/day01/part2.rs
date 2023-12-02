@@ -22,5 +22,5 @@ fn main() {
             Some(first_digit * 10 + second_digit)
         })
         .sum();
-    println!("sum: {}", sum);
+    assert_eq!(sum, 54676)
 }

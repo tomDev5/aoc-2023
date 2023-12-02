@@ -15,5 +15,5 @@ fn main() {
         .filter(|(_, drawing)| drawing.red <= 12 && drawing.green <= 13 && drawing.blue <= 14)
         .map(|(index, _)| index + 1)
         .sum();
-    println!("sum: {}", sum);
+    assert_eq!(sum, 2061);
 }
