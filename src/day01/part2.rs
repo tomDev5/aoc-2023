@@ -12,9 +12,7 @@ fn main() {
                 .into_iter()
                 .enumerate()
                 .try_fold(line, |line, (number, number_string)| {
-                    let first_char = number_string.chars().next()?;
-                    let last_char = number_string.chars().next_back()?;
-                    let target = format!("{first_char}{number}{last_char}");
+                    let target = format!("{number_string}{number}{number_string}");
                     Some(line.replace(number_string, &target))
                 })
         })
