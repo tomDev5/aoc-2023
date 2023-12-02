@@ -11,4 +11,13 @@ path = "src/day01/part1.rs"
 name = "d1p2"
 path = "src/day01/part2.rs"
 
+[[bin]]
+name = "d2p1"
+path = "src/day02/part1.rs"
+
+[[bin]]
+name = "d2p2"
+path = "src/day02/part2.rs"
+
 [dependencies]
+itertools = "0.12.0"
