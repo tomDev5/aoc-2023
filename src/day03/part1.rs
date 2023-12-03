@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 const INPUT: &'static str = include_str!("../../data/day03/input.txt");
 
 mod schematic;
@@ -11,25 +9,24 @@ fn main() {
             line.chars()
                 .enumerate()
                 .filter(|&(_, c)| c.is_digit(10))
-                .fold(Vec::<(usize, String)>::new(), |mut v, (index, digit)| {
-                    if let Some((last_index, number)) = v
+                .fold(Vec::<(usize, String)>::new(), |mut v, (column, digit)| {
+                    // if current digit is a part of the current number, add to it
+                    // else start a new number
+                    if let Some((_, number)) = v
                         .last_mut()
-                        .filter(|(last_index, _)| *last_index == index - 1)
+                        .filter(|(number_column, number)| *number_column + number.len() == column)
                     {
-                        *last_index = index;
                         number.push(digit);
                     } else {
-                        v.push((index, digit.to_string()));
+                        v.push((column, digit.to_string()));
                     }
                     v
                 })
+                .into_iter()
         })
         .enumerate()
-        .map(|(line_number, end_indexes_and_numbers)| {
-            end_indexes_and_numbers
-                .into_iter()
-                .map(|(end_index, number)| (line_number, end_index + 1 - number.len(), number))
-                .collect_vec()
+        .map(|(line, column_and_number)| {
+            column_and_number.map(move |(column, number)| (line, column, number))
         })
         .flatten()
         .filter(|(number_line, number_start_column, number)| {
