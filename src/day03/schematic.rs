@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use itertools::Itertools;
 
 pub struct Schematic {
@@ -11,25 +13,78 @@ impl Schematic {
         }
     }
 
-    pub fn get_part_numbers(&self) -> impl Iterator<Item = usize> + '_ {
+    #[allow(dead_code)]
+    pub fn all_parts(&self) -> impl Iterator<Item = usize> + '_ {
+        self.numbers_and_special_chars()
+            .filter_map(|(line, col, number, mut special_chars)| {
+                match special_chars.next().is_some() {
+                    true => Some((line, col, number)),
+                    false => None,
+                }
+            })
+            .map(|(_, _, number)| number)
+    }
+
+    #[allow(dead_code)]
+    pub fn gear_ratios(&self) -> impl Iterator<Item = usize> + '_ {
+        self.numbers_and_special_chars()
+            .filter_map(|(_, _, number, special_chars)| {
+                let mut stars = special_chars
+                    .filter(|(_, _, c)| c.eq(&'*'))
+                    .map(|(line, col, _)| (line, col))
+                    .peekable();
+                match stars.peek().is_some() {
+                    true => Some((number, stars)),
+                    false => None,
+                }
+            })
+            .fold(
+                HashMap::<(usize, usize), Vec<usize>>::new(),
+                |mut map, (number, stars)| {
+                    stars.for_each(|star_coordinates| {
+                        map.entry(star_coordinates).or_default().push(number);
+                    });
+                    map
+                },
+            )
+            .values()
+            .filter(|v| v.len() == 2)
+            .map(|v| v[0] * v[1])
+            .collect::<Vec<_>>()
+            .into_iter()
+    }
+
+    fn numbers_and_special_chars(
+        &self,
+    ) -> impl Iterator<
+        Item = (
+            usize,
+            usize,
+            usize,
+            impl Iterator<Item = (usize, usize, char)> + '_,
+        ),
+    > + '_ {
         self.get_numbers_in_matrix()
             .filter_map(|(line, col)| {
                 self.get_number_at_index(line, col)
-                    .map(|number_str| (line, col, number_str))
+                    .map(|number| (line, col, number))
             })
-            .filter(|(line, col, number_str)| {
+            .map(|(line, col, number)| {
                 let start_line = line.checked_sub(1).unwrap_or(0);
                 let end_line = line + 1;
                 let start_col = col.checked_sub(1).unwrap_or(0);
-                let end_col = col + number_str.len();
+                let end_col = col + number.len();
 
-                let special_chars_in_block = self
-                    .get_chars_in_block(start_line, end_line, start_col, end_col)
-                    .filter(|c| !c.is_digit(10) && *c != '.')
-                    .count();
-                special_chars_in_block > 0
+                let special_chars_in_block =
+                    self.get_chars_in_block(start_line, end_line, start_col, end_col);
+                (line, col, number, special_chars_in_block)
             })
-            .filter_map(|(_, _, number_str)| number_str.parse::<usize>().ok())
+            .filter_map(|(line, col, number, special_chars_in_block)| {
+                number
+                    .parse::<usize>()
+                    .ok()
+                    .map(|number| (line, col, number, special_chars_in_block))
+            })
     }
 
     fn get_numbers_in_matrix(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
@@ -69,13 +124,21 @@ impl Schematic {
         end_line: usize,
         start_col: usize,
         end_col: usize,
-    ) -> impl Iterator<Item = char> + '_ {
+    ) -> impl Iterator<Item = (usize, usize, char)> + '_ {
         self.matrix
             .iter()
+            .enumerate()
             .skip(start_line)
             .take(end_line - start_line + 1)
-            .map(move |line| line.iter().skip(start_col).take(end_col - start_col + 1))
+            .map(move |(line_index, line)| {
+                line.iter()
+                    .cloned()
+                    .enumerate()
+                    .skip(start_col)
+                    .take(end_col - start_col + 1)
+                    .map(move |(col_index, char)| (line_index, col_index, char))
+                    .filter(|(_, _, c)| !c.is_digit(10) && !c.eq(&'.'))
+            })
             .flatten()
-            .cloned()
     }
 }
