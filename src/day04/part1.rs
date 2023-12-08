@@ -8,24 +8,23 @@ fn main() {
     let result = INPUT
         .lines()
         .filter_map(|line| line.split('|').collect_tuple())
-        .map(|(winning, got): (&str, &str)| (winning.split_whitespace(), got.split_whitespace()))
-        .map(|(winning, got)| {
+        .map(|(winning, got): (&str, &str)| {
             (
-                winning.filter_map(|n| n.parse::<usize>().ok()),
-                got.filter_map(|n| n.parse::<usize>().ok()),
-            )
-        })
-        .map(|(winning, got)| {
-            (
-                HashSet::<usize>::from_iter(winning),
-                HashSet::<usize>::from_iter(got),
+                HashSet::<usize>::from_iter(
+                    winning
+                        .split_whitespace()
+                        .filter_map(|n| n.parse::<usize>().ok()),
+                ),
+                HashSet::<usize>::from_iter(
+                    got.split_whitespace()
+                        .filter_map(|n| n.parse::<usize>().ok()),
+                ),
             )
         })
         .map(|(winning, got)| winning.intersection(&got).count())
         .filter(|winning_cards| *winning_cards > 0)
-        .fold(0, |acc, winning_cards| {
-            let points = 2usize.pow(winning_cards as u32 - 1);
-            acc + points
+        .fold(0, |points, winning_cards| {
+            points + 2usize.pow(winning_cards as u32 - 1)
         });
     println!("{:?}", result);
 }
