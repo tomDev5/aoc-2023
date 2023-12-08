@@ -19,31 +19,50 @@ impl RangeMapping {
         }
     }
 
-    fn convert(&self, from: usize) -> usize {
+    fn convert(&self, from: usize) -> Option<usize> {
         if from >= self.from_start && from < self.from_start + self.length {
-            (from - self.from_start) + self.to_start
+            Some((from - self.from_start) + self.to_start)
         } else {
-            from
+            None
         }
     }
 }
 
+struct MappingBlock {
+    ranges: Vec<RangeMapping>,
+}
+
+impl MappingBlock {
+    fn new(ranges: impl Iterator<Item = RangeMapping>) -> Self {
+        Self {
+            ranges: ranges.collect_vec(),
+        }
+    }
+
+    fn convert(&self, from: usize) -> Option<usize> {
+        for range_mapping in &self.ranges {
+            if let Some(new_index) = range_mapping.convert(from) {
+                return Some(new_index);
+            }
+        }
+        None
+    }
+}
+
 fn main() {
-    let maps: Vec<Vec<RangeMapping>> = INPUT
+    let maps: Vec<MappingBlock> = INPUT
         .split("\n\n")
         .skip(1)
         .map(|block| {
             let mut lines = block.lines();
             let _title = lines.next();
-            let rules = lines
-                .map(|rule| {
-                    let tuple = rule
-                        .split_whitespace()
-                        .filter_map(|s| s.parse::<usize>().ok())
-                        .collect_vec();
-                    RangeMapping::new(tuple[1], tuple[0], tuple[2])
-                })
-                .collect_vec();
+            let rules = MappingBlock::new(lines.map(|rule| {
+                let tuple = rule
+                    .split_whitespace()
+                    .filter_map(|s| s.parse::<usize>().ok())
+                    .collect_vec();
+                RangeMapping::new(tuple[1], tuple[0], tuple[2])
+            }));
             rules
         })
         .collect_vec();
@@ -57,13 +76,7 @@ fn main() {
         .map(|seed| {
             let mut index = seed;
             for map in &maps {
-                for range_mapping in map {
-                    let new_index = range_mapping.convert(index);
-                    if new_index != index {
-                        index = new_index;
-                        break;
-                    }
-                }
+                index = map.convert(index).unwrap_or(index);
             }
             index
         })
