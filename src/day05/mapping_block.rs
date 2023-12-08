@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use itertools::Itertools;
 
 pub struct MappingBlock {
@@ -21,24 +23,16 @@ impl MappingBlock {
     }
 }
 
-pub struct MappingRange {
-    from_start: usize,
-    to_start: usize,
-    length: usize,
-}
+pub struct MappingRange(Range<usize>, usize);
 
 impl MappingRange {
     pub fn new(from_start: usize, to_start: usize, length: usize) -> Self {
-        Self {
-            from_start,
-            to_start,
-            length,
-        }
+        Self(from_start..from_start + length, to_start)
     }
 
     fn convert(&self, from: usize) -> Option<usize> {
-        if (self.from_start..self.from_start + self.length).contains(&from) {
-            Some((from - self.from_start) + self.to_start)
+        if self.0.contains(&from) {
+            Some((from - self.0.start) + self.1)
         } else {
             None
         }
