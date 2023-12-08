@@ -3,6 +3,9 @@ name = "advent23"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+debug = true
+
 [[bin]]
 name = "d1p1"
 path = "src/day01/part1.rs"
@@ -38,6 +41,10 @@ path = "src/day04/part2.rs"
 [[bin]]
 name = "d5p1"
 path = "src/day05/part1.rs"
+
+[[bin]]
+name = "d5p2"
+path = "src/day05/part2.rs"
 
 [dependencies]
 itertools = "0.12.0"
