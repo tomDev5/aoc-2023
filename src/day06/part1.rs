@@ -1,24 +1,11 @@
+use crate::race::Race;
 use itertools::Itertools;
 use transpose::Transpose;
 
+mod race;
 mod transpose;
 
 const INPUT: &'static str = include_str!("../../data/day06/input.txt");
-
-#[derive(Debug, Clone)]
-struct Race {
-    time: usize,
-    current_record: usize,
-}
-
-impl Race {
-    fn new(time: usize, current_record: usize) -> Self {
-        Self {
-            time,
-            current_record,
-        }
-    }
-}
 
 fn main() {
     let races = INPUT
@@ -35,20 +22,7 @@ fn main() {
         .map(|v| Race::new(v[0], v[1]));
 
     let result: usize = races
-        .map(|race| {
-            (0..race.time)
-                .map(|hold_time| run_race(race.time, hold_time))
-                .filter(|distance| distance > &race.current_record)
-                .count()
-        })
+        .map(|race| race.find_number_of_winning_runs())
         .product();
     println!("{:?}", result);
-}
-
-fn run_race(time: usize, hold_time: usize) -> usize {
-    if hold_time >= time {
-        0
-    } else {
-        (time - hold_time) * hold_time
-    }
 }
