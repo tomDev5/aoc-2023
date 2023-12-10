@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -126,25 +128,24 @@ impl std::fmt::Debug for Hand {
 }
 
 impl Ord for Hand {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let my_type = self.get_hand_type();
-        let other_type = other.get_hand_type();
-        match my_type.cmp(&other_type) {
-            std::cmp::Ordering::Equal => {
-                for (my_card, other_card) in self.cards.iter().zip(other.cards.iter()) {
-                    if my_card != other_card {
-                        return other_card.cmp(my_card);
-                    }
-                }
-                return std::cmp::Ordering::Equal;
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.get_hand_type().cmp(&other.get_hand_type()) {
+            Ordering::Equal => {
+                return self
+                    .cards
+                    .iter()
+                    .zip(other.cards.iter())
+                    .find(|(lhs, rhs)| lhs != rhs)
+                    .map(|(lhs, rhs)| rhs.cmp(lhs))
+                    .unwrap_or(Ordering::Equal);
             }
-            other => return other,
+            order => return order,
         }
     }
 }
 
 impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
