@@ -73,26 +73,20 @@ impl Hand {
             .map(|(_, group)| group.count())
             .sorted()
             .rev();
-        match card_count.next().expect("Invalid number of cards") {
-            5 => HandType::FiveOfAKind,
-            4 => HandType::FourOfAKind,
-            2 => {
-                let next_up = card_count.next().expect("Invalid number of cards");
-                match next_up {
-                    2 => HandType::TwoPair,
-                    1 => HandType::OnePair,
-                    _ => panic!("Invalid number of cards"),
-                }
-            }
-            3 => {
-                let next_up = card_count.next().expect("Invalid number of cards");
-                match next_up {
-                    2 => HandType::FullHouse,
-                    1 => HandType::ThreeOfAKind,
-                    _ => panic!("Invalid number of cards"),
-                }
-            }
-            1 => HandType::HighCard,
+        match card_count.next() {
+            Some(5) => HandType::FiveOfAKind,
+            Some(4) => HandType::FourOfAKind,
+            Some(3) => match card_count.next() {
+                Some(2) => HandType::FullHouse,
+                Some(1) => HandType::ThreeOfAKind,
+                _ => panic!("Invalid number of cards"),
+            },
+            Some(2) => match card_count.next() {
+                Some(2) => HandType::TwoPair,
+                Some(1) => HandType::OnePair,
+                _ => panic!("Invalid number of cards"),
+            },
+            Some(1) => HandType::HighCard,
             _ => panic!("Invalid number of cards"),
         }
     }

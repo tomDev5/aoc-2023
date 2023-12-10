@@ -77,42 +77,29 @@ impl Hand {
             .rev();
         match card_count.next() {
             Some(5) => HandType::FiveOfAKind,
-            Some(4) => {
-                if jokers > 0 {
-                    HandType::FiveOfAKind
-                } else {
-                    HandType::FourOfAKind
-                }
-            }
-            Some(2) => match card_count.next() {
-                Some(2) => {
-                    if jokers == 1 {
-                        HandType::FullHouse
-                    } else {
-                        HandType::TwoPair
-                    }
-                }
-                Some(1) => {
-                    if jokers == 2 {
-                        HandType::FourOfAKind
-                    } else if jokers == 1 {
-                        HandType::ThreeOfAKind
-                    } else {
-                        HandType::OnePair
-                    }
-                }
-                None => HandType::FiveOfAKind,
-                _ => panic!("Invalid number of cards"),
+            Some(4) => match jokers {
+                1 => HandType::FiveOfAKind,
+                _ => HandType::FourOfAKind,
             },
             Some(3) => match card_count.next() {
                 Some(2) => HandType::FullHouse,
-                Some(1) => {
-                    if jokers > 0 {
-                        HandType::FourOfAKind
-                    } else {
-                        HandType::ThreeOfAKind
-                    }
-                }
+                Some(1) => match jokers {
+                    1 => HandType::FourOfAKind,
+                    _ => HandType::ThreeOfAKind,
+                },
+                None => HandType::FiveOfAKind,
+                _ => panic!("Invalid number of cards"),
+            },
+            Some(2) => match card_count.next() {
+                Some(2) => match jokers {
+                    1 => HandType::FullHouse,
+                    _ => HandType::TwoPair,
+                },
+                Some(1) => match jokers {
+                    2 => HandType::FourOfAKind,
+                    1 => HandType::ThreeOfAKind,
+                    _ => HandType::OnePair,
+                },
                 None => HandType::FiveOfAKind,
                 _ => panic!("Invalid number of cards"),
             },
