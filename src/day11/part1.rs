@@ -39,12 +39,29 @@ fn main() {
         .map(|line| line.chars().filter_map(|c| CosmicElement::try_from(c).ok()));
     let matrix = matrix.map(|l| l.collect_vec()).collect_vec();
     let matrix = expand_universe(matrix);
-    for l in matrix {
-        for c in l {
-            print!("{:?}", c);
-        }
-        println!();
-    }
+    let galaxies = matrix
+        .into_iter()
+        .enumerate()
+        .map(|(y, line)| {
+            line.into_iter()
+                .enumerate()
+                .filter_map(move |(x, element)| {
+                    if element == CosmicElement::Galaxy {
+                        Some((x, y))
+                    } else {
+                        None
+                    }
+                })
+        })
+        .flatten();
+    let distance_sum: usize = galaxies
+        .clone()
+        .cartesian_product(galaxies)
+        .into_iter()
+        .map(|(p0, p1)| distance(p0, p1))
+        .sum::<usize>()
+        / 2;
+    println!("Sum of distances: {}", distance_sum);
 }
 
 fn expand_universe(matrix: Vec<Vec<CosmicElement>>) -> Vec<Vec<CosmicElement>> {
@@ -66,4 +83,8 @@ fn expand_universe(matrix: Vec<Vec<CosmicElement>>) -> Vec<Vec<CosmicElement>> {
         }
     }
     expanded.transpose()
+}
+
+fn distance((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> usize {
+    usize::abs_diff(x1, x2) + usize::abs_diff(y1, y2)
 }
