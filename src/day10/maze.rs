@@ -36,7 +36,8 @@ impl Maze {
         }
     }
 
-    pub fn get_loop_length(&self) -> Option<usize> {
+    pub fn get_loop(&self) -> Option<Vec<(usize, usize)>> {
+        let mut points: Vec<(usize, usize)> = Vec::new();
         let start = self.find_start()?;
         let mut previous = start;
         let mut cursor = start;
@@ -47,11 +48,12 @@ impl Maze {
                 .into_iter()
                 .filter(|pos| *pos != previous)
                 .next()?;
+            points.push(cursor);
             previous = cursor;
             cursor = next_move;
             loop_length += 1;
         }
-        Some(loop_length)
+        Some(points)
     }
 
     fn find_start(&self) -> Option<(usize, usize)> {
