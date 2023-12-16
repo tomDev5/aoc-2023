@@ -118,6 +118,14 @@ path = "src/day14/part1.rs"
 name = "d14p2"
 path = "src/day14/part2.rs"
 
+[[bin]]
+name = "d15p1"
+path = "src/day15/part1.rs"
+
+[[bin]]
+name = "d15p2"
+path = "src/day15/part2.rs"
+
 [dependencies]
 cached = "0.46.1"
 itertools = "0.12.0"
