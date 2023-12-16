@@ -99,4 +99,5 @@ name = "d12p1"
 path = "src/day12/part1.rs"
 
 [dependencies]
+cached = "0.46.1"
 itertools = "0.12.0"
