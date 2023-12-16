@@ -1,5 +1,7 @@
 use itertools::Itertools;
 
+type Coordinates = (usize, usize);
+
 pub struct Maze {
     matrix: Vec<Vec<char>>,
 }
@@ -36,8 +38,8 @@ impl Maze {
         }
     }
 
-    pub fn get_loop(&self) -> Option<Vec<(usize, usize)>> {
-        let mut points: Vec<(usize, usize)> = Vec::new();
+    pub fn get_loop(&self) -> Option<Vec<Coordinates>> {
+        let mut points: Vec<Coordinates> = Vec::new();
         let start = self.find_start()?;
         let mut previous = start;
         let mut cursor = start;
@@ -45,9 +47,7 @@ impl Maze {
         while cursor != start || loop_length == 0 {
             let next_move = self
                 .get_possible_moves(cursor)
-                .into_iter()
-                .filter(|pos| *pos != previous)
-                .next()?;
+                .find(|pos| *pos != previous)?;
             points.push(cursor);
             previous = cursor;
             cursor = next_move;
@@ -56,16 +56,13 @@ impl Maze {
         Some(points)
     }
 
-    fn find_start(&self) -> Option<(usize, usize)> {
+    fn find_start(&self) -> Option<Coordinates> {
         let line_length = self.matrix[0].len();
         let start_position = self.matrix.iter().flatten().position(|c| *c == 'S')?;
         Some((start_position / line_length, start_position % line_length))
     }
 
-    fn get_possible_moves(
-        &self,
-        cursor: (usize, usize),
-    ) -> impl Iterator<Item = (usize, usize)> + '_ {
+    fn get_possible_moves(&self, cursor: Coordinates) -> impl Iterator<Item = Coordinates> + '_ {
         let theoretical = self.get_element_possible_moves(cursor);
         theoretical.into_iter().filter(move |next_step| {
             self.get_element_possible_moves(*next_step)
@@ -73,10 +70,7 @@ impl Maze {
         })
     }
 
-    fn get_element_possible_moves(
-        &self,
-        cursor: (usize, usize),
-    ) -> impl Iterator<Item = (usize, usize)> {
+    fn get_element_possible_moves(&self, cursor: Coordinates) -> impl Iterator<Item = Coordinates> {
         match self.get(cursor).unwrap() {
             '─' => {
                 vec![
@@ -125,14 +119,14 @@ impl Maze {
             _ => unreachable!(),
         }
         .into_iter()
-        .filter_map(std::convert::identity)
+        .flatten()
     }
 
-    fn get(&self, cursor: (usize, usize)) -> Option<&char> {
+    fn get(&self, cursor: Coordinates) -> Option<&char> {
         self.matrix.get(cursor.0)?.get(cursor.1)
     }
 
-    fn move_diff(&self, cursor: (usize, usize), diff: (isize, isize)) -> Option<(usize, usize)> {
+    fn move_diff(&self, cursor: Coordinates, diff: (isize, isize)) -> Option<Coordinates> {
         let cursor_isize = (cursor.0 as isize, cursor.1 as isize);
         if !(0..self.matrix.len() as isize).contains(&(cursor_isize.0 + diff.0))
             || !(0..self.matrix[0].len() as isize).contains(&(cursor_isize.1 + diff.1))

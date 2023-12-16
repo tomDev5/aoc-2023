@@ -3,7 +3,7 @@ use maze::Maze;
 
 mod maze;
 
-const INPUT: &'static str = include_str!("../../data/day10/input.txt");
+const INPUT: &str = include_str!("../../data/day10/input.txt");
 
 fn main() {
     let mut loop_coordinates = Maze::new(INPUT)

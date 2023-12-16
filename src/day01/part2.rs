@@ -1,7 +1,7 @@
 const DIGIT_NAMES: [&str; 10] = [
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
-const INPUT: &'static str = include_str!("../../data/day01/input.txt");
+const INPUT: &str = include_str!("../../data/day01/input.txt");
 
 fn main() {
     let sum: u32 = INPUT

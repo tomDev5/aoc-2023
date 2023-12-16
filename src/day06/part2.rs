@@ -3,7 +3,7 @@ use itertools::Itertools;
 
 mod race;
 
-const INPUT: &'static str = include_str!("../../data/day06/input.txt");
+const INPUT: &str = include_str!("../../data/day06/input.txt");
 
 fn main() {
     let race = INPUT

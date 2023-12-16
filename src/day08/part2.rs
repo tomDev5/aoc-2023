@@ -7,10 +7,10 @@ use crate::{action::Action, node::Node};
 mod action;
 mod node;
 
-const INPUT: &'static str = include_str!("../../data/day08/input.txt");
+const INPUT: &str = include_str!("../../data/day08/input.txt");
 
 fn main() {
-    let mut lines = INPUT.split("\n").filter(|part| part.len() > 0);
+    let mut lines = INPUT.split('\n').filter(|part| !part.is_empty());
     let actions = lines
         .next()
         .unwrap_or_default()
@@ -22,7 +22,7 @@ fn main() {
         .filter_map(|line| {
             line.split([' ', '=', ')', '(', ','])
                 .filter(|s| !s.is_empty())
-                .map(|node| Node::from(node))
+                .map(Node::from)
                 .collect_tuple::<(_, _, _)>()
         })
         .fold(HashMap::new(), |mut table, (from, left, right)| {
@@ -53,7 +53,7 @@ fn find_iterations_to_z(
             };
 
             match next_cursor {
-                Some(c) => find_iterations_to_z(table, actions, &c, iteration + 1),
+                Some(c) => find_iterations_to_z(table, actions, c, iteration + 1),
                 None => unreachable!("Invalid cursor in the table"),
             }
         }

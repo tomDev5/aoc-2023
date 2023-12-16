@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use crate::joker_camel_cards::{Card, Hand};
 
-const INPUT: &'static str = include_str!("../../data/day07/input.txt");
+const INPUT: &str = include_str!("../../data/day07/input.txt");
 
 mod joker_camel_cards;
 

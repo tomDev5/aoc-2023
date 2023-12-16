@@ -4,7 +4,7 @@ pub trait Transpose {
 
 impl<T> Transpose for Vec<Vec<T>> {
     fn transpose(self) -> Self {
-        if self.len() == 0 {
+        if self.is_empty() {
             return self;
         }
 

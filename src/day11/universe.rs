@@ -1,6 +1,8 @@
 use crate::{cosmic_element::CosmicElement, transpose::Transpose};
 use itertools::Itertools;
 
+type Coordinates = (usize, usize);
+
 pub struct Universe {
     grid: Vec<Vec<CosmicElement>>,
 }
@@ -19,10 +21,7 @@ impl Universe {
         }
     }
 
-    pub fn get_galaxy_distances(
-        &self,
-        expantion: usize,
-    ) -> Vec<((usize, usize), (usize, usize), usize)> {
+    pub fn get_galaxy_distances(&self, expantion: usize) -> Vec<(Coordinates, Coordinates, usize)> {
         let empty_lines = self.get_empty_rows();
         let empty_cols = self.get_empty_cols();
 
@@ -32,7 +31,6 @@ impl Universe {
             .clone()
             .into_iter()
             .cartesian_product(galaxies)
-            .into_iter()
             .map(move |(p0, p1)| {
                 let empty_lines_crossed = empty_lines
                     .iter()
@@ -78,11 +76,11 @@ impl Universe {
             .collect()
     }
 
-    fn get_galaxys(&self) -> Vec<(usize, usize)> {
+    fn get_galaxys(&self) -> Vec<Coordinates> {
         self.grid
             .iter()
             .enumerate()
-            .map(|(line_index, line)| {
+            .flat_map(|(line_index, line)| {
                 line.iter()
                     .enumerate()
                     .filter_map(move |(column_index, element)| {
@@ -93,15 +91,10 @@ impl Universe {
                         }
                     })
             })
-            .flatten()
             .collect()
     }
 }
 
-fn distance(
-    (x1, y1): (usize, usize),
-    (x2, y2): (usize, usize),
-    empty_rows_or_cols: usize,
-) -> usize {
+fn distance((x1, y1): Coordinates, (x2, y2): Coordinates, empty_rows_or_cols: usize) -> usize {
     usize::abs_diff(x1, x2) + usize::abs_diff(y1, y2) + empty_rows_or_cols
 }

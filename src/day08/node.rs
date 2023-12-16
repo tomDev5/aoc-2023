@@ -23,11 +23,11 @@ impl Node {
 
     #[allow(dead_code)]
     pub fn is_part_start(&self) -> bool {
-        self.name.ends_with("A")
+        self.name.ends_with('A')
     }
 
     #[allow(dead_code)]
     pub fn is_part_end(&self) -> bool {
-        self.name.ends_with("Z")
+        self.name.ends_with('Z')
     }
 }

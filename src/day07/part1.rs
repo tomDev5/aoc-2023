@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use crate::camel_cards::{Card, Hand};
 
-const INPUT: &'static str = include_str!("../../data/day07/input.txt");
+const INPUT: &str = include_str!("../../data/day07/input.txt");
 
 mod camel_cards;
 

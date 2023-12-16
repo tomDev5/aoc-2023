@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 
+type Coordinates = (usize, usize);
+
 pub struct Schematic {
     matrix: Vec<Vec<char>>,
 }
@@ -39,7 +41,7 @@ impl Schematic {
                 }
             })
             .fold(
-                HashMap::<(usize, usize), Vec<usize>>::new(),
+                HashMap::<Coordinates, Vec<usize>>::new(),
                 |mut map, (number, stars)| {
                     stars.for_each(|star_coordinates| {
                         map.entry(star_coordinates).or_default().push(number);
@@ -70,9 +72,9 @@ impl Schematic {
                     .map(|number| (line, col, number))
             })
             .map(|(line, col, number)| {
-                let start_line = line.checked_sub(1).unwrap_or(0);
+                let start_line = line.saturating_sub(1);
                 let end_line = line + 1;
-                let start_col = col.checked_sub(1).unwrap_or(0);
+                let start_col = col.saturating_sub(1);
                 let end_col = col + number.len();
 
                 let special_chars_in_block =
@@ -87,7 +89,7 @@ impl Schematic {
             })
     }
 
-    fn get_numbers_in_matrix(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    fn get_numbers_in_matrix(&self) -> impl Iterator<Item = Coordinates> + '_ {
         self.matrix
             .iter()
             .map(|line| {
@@ -96,7 +98,7 @@ impl Schematic {
                         .checked_sub(1)
                         .and_then(|prev_col| line.get(prev_col));
 
-                    if !char.is_digit(10) || previous_char.is_some_and(|c| c.is_digit(10)) {
+                    if !char.is_ascii_digit() || previous_char.is_some_and(|c| c.is_ascii_digit()) {
                         None
                     } else {
                         Some(column)
@@ -104,15 +106,14 @@ impl Schematic {
                 })
             })
             .enumerate()
-            .map(|(line, columns)| columns.map(move |column| (line, column)))
-            .flatten()
+            .flat_map(|(line, columns)| columns.map(move |column| (line, column)))
     }
 
     fn get_number_at_index(&self, line: usize, col: usize) -> Option<String> {
         self.matrix.get(line)?.get(col..).map(|slice| {
             slice
-                .into_iter()
-                .take_while(|c| c.is_digit(10))
+                .iter()
+                .take_while(|c| c.is_ascii_digit())
                 .cloned()
                 .collect::<String>()
         })
@@ -130,15 +131,14 @@ impl Schematic {
             .enumerate()
             .skip(start_line)
             .take(end_line - start_line + 1)
-            .map(move |(line_index, line)| {
+            .flat_map(move |(line_index, line)| {
                 line.iter()
                     .cloned()
                     .enumerate()
                     .skip(start_col)
                     .take(end_col - start_col + 1)
                     .map(move |(col_index, char)| (line_index, col_index, char))
-                    .filter(|(_, _, c)| !c.is_digit(10) && !c.eq(&'.'))
+                    .filter(|(_, _, c)| !c.is_ascii_digit() && !c.eq(&'.'))
             })
-            .flatten()
     }
 }

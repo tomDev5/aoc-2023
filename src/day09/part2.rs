@@ -2,7 +2,7 @@ use crate::derivative_predictor::get_prediction;
 
 mod derivative_predictor;
 
-const INPUT: &'static str = include_str!("../../data/day09/input.txt");
+const INPUT: &str = include_str!("../../data/day09/input.txt");
 
 fn main() {
     let result: isize = INPUT

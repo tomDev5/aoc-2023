@@ -11,7 +11,7 @@ impl TryFrom<&str> for CubeCount {
     type Error = ();
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        s.split(",")
+        s.split(',')
             .try_fold(Self::default(), |mut drawing, color_line| {
                 let (number_of_cubes, color) = color_line.split_whitespace().collect_tuple()?;
                 let number_of_cubes = number_of_cubes.parse::<usize>().ok()?;

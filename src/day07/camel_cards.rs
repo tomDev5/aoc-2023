@@ -115,7 +115,7 @@ impl Ord for Hand {
                     .map(|(lhs, rhs)| rhs.cmp(lhs))
                     .unwrap_or(Ordering::Equal);
             }
-            order => return order,
+            order => order,
         }
     }
 }

@@ -4,7 +4,7 @@ use std::usize;
 
 mod mapping_block;
 
-const INPUT: &'static str = include_str!("../../data/day05/input.txt");
+const INPUT: &str = include_str!("../../data/day05/input.txt");
 
 fn main() {
     let mapping_blocks: Vec<MappingBlock> = INPUT
@@ -24,8 +24,7 @@ fn main() {
         .collect_vec();
 
     let result = INPUT
-        .lines()
-        .nth(0)
+        .lines().next()
         .expect("Invalid input")
         .split_whitespace()
         .filter_map(|s| s.parse::<usize>().ok())

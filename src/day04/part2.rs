@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use itertools::Itertools;
 
-const INPUT: &'static str = include_str!("../../data/day04/input.txt");
+const INPUT: &str = include_str!("../../data/day04/input.txt");
 
 fn main() {
     let points = INPUT
