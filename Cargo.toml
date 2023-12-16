@@ -90,5 +90,9 @@ path = "src/day10/part2.rs"
 name = "d11p1"
 path = "src/day11/part1.rs"
 
+[[bin]]
+name = "d11p2"
+path = "src/day11/part2.rs"
+
 [dependencies]
 itertools = "0.12.0"
