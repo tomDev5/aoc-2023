@@ -1,6 +1,9 @@
 use itertools::Itertools;
 use transpose::Transpose;
 
+use crate::mirror_finder::find_almost_mirror_line;
+
+mod mirror_finder;
 mod transpose;
 
 const INPUT: &str = include_str!("../../data/day13/input.txt");
@@ -14,8 +17,8 @@ fn main() {
     let result: usize = blocks
         .into_iter()
         .filter_map(|block| {
-            let mirror_line = find_mirror_line(&block);
-            let mirror_column = find_mirror_line(&block.transpose());
+            let mirror_line = find_almost_mirror_line(&block, 0);
+            let mirror_column = find_almost_mirror_line(&block.transpose(), 0);
 
             match (mirror_line, mirror_column) {
                 (None, None) => None,
@@ -27,28 +30,4 @@ fn main() {
         .sum();
 
     println!("result: {:?}", result)
-}
-
-fn find_mirror_line(matrix: &Vec<Vec<char>>) -> Option<usize> {
-    for line_index in 1..matrix.len() {
-        if verify_mirror_line(matrix, line_index)? {
-            return Some(line_index);
-        }
-    }
-    None
-}
-
-fn verify_mirror_line(matrix: &Vec<Vec<char>>, line: usize) -> Option<bool> {
-    let mirrored_lines = usize::min(line, matrix.len() - line);
-
-    let above_lines = matrix
-        .get(line - mirrored_lines..line)?
-        .into_iter()
-        .collect_vec();
-    let below_lines = matrix
-        .get(line..line + mirrored_lines)?
-        .into_iter()
-        .rev()
-        .collect_vec();
-    Some(above_lines == below_lines)
 }
