@@ -1,3 +1,5 @@
+use arrayvec::ArrayVec;
+
 use crate::direction::Direction;
 use std::fmt::Display;
 
@@ -26,28 +28,32 @@ impl TryFrom<char> for Element {
 }
 
 impl Element {
-    pub fn get_directions(&self, direction: Direction) -> Vec<Direction> {
+    pub fn get_directions(&self, direction: Direction) -> ArrayVec<Direction, 2> {
         match self {
-            Element::Air => vec![direction],
+            Element::Air => ArrayVec::from_iter(std::iter::once(direction)),
             Element::Slash => match direction {
-                Direction::Up => vec![Direction::Right],
-                Direction::Down => vec![Direction::Left],
-                Direction::Left => vec![Direction::Down],
-                Direction::Right => vec![Direction::Up],
+                Direction::Up => ArrayVec::from_iter(std::iter::once(Direction::Right)),
+                Direction::Down => ArrayVec::from_iter(std::iter::once(Direction::Left)),
+                Direction::Left => ArrayVec::from_iter(std::iter::once(Direction::Down)),
+                Direction::Right => ArrayVec::from_iter(std::iter::once(Direction::Up)),
             },
             Element::BackSlash => match direction {
-                Direction::Up => vec![Direction::Left],
-                Direction::Down => vec![Direction::Right],
-                Direction::Left => vec![Direction::Up],
-                Direction::Right => vec![Direction::Down],
+                Direction::Up => ArrayVec::from_iter(std::iter::once(Direction::Left)),
+                Direction::Down => ArrayVec::from_iter(std::iter::once(Direction::Right)),
+                Direction::Left => ArrayVec::from_iter(std::iter::once(Direction::Up)),
+                Direction::Right => ArrayVec::from_iter(std::iter::once(Direction::Down)),
             },
             Element::Pipe => match direction {
-                d @ (Direction::Up | Direction::Down) => vec![d],
-                Direction::Left | Direction::Right => vec![Direction::Up, Direction::Down],
+                d @ (Direction::Up | Direction::Down) => ArrayVec::from_iter(std::iter::once(d)),
+                Direction::Left | Direction::Right => {
+                    ArrayVec::from_iter([Direction::Up, Direction::Down].into_iter())
+                }
             },
             Element::Dash => match direction {
-                Direction::Up | Direction::Down => vec![Direction::Left, Direction::Right],
-                d @ (Direction::Left | Direction::Right) => vec![d],
+                Direction::Up | Direction::Down => {
+                    ArrayVec::from_iter([Direction::Left, Direction::Right].into_iter())
+                }
+                d @ (Direction::Left | Direction::Right) => ArrayVec::from_iter(std::iter::once(d)),
             },
         }
     }

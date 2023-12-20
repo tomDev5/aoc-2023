@@ -131,5 +131,6 @@ name = "d16p1"
 path = "src/day16/part1.rs"
 
 [dependencies]
+arrayvec = "0.7.4"
 cached = "0.46.1"
 itertools = "0.12.0"
