@@ -33,7 +33,7 @@ fn roll_north(matrix: &mut Vec<Vec<char>>) {
     }
 }
 
-fn calculate_load(matrix: &Vec<Vec<char>>) -> usize {
+fn calculate_load(matrix: &[Vec<char>]) -> usize {
     matrix
         .iter()
         .rev()

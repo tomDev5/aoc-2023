@@ -69,7 +69,7 @@ fn roll_east(matrix: &mut Vec<Vec<char>>) {
     matrix.extend(rolled);
 }
 
-fn calculate_load(matrix: &Vec<Vec<char>>) -> usize {
+fn calculate_load(matrix: &[Vec<char>]) -> usize {
     matrix
         .iter()
         .rev()

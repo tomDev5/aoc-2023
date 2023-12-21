@@ -47,7 +47,7 @@ fn main() {
         )
         .into_iter()
         .enumerate()
-        .map(|(box_index, map)| {
+        .flat_map(|(box_index, map)| {
             map.into_iter()
                 .sorted_by_key(|(_, (i, _))| *i)
                 .map(|(_, (_, focal))| focal)
@@ -55,7 +55,6 @@ fn main() {
                 .map(|(slot_number, focal)| (box_index, slot_number, focal))
                 .collect_vec()
         })
-        .flatten()
         .map(|(box_index, slot_number, focal)| (box_index + 1) * (slot_number + 1) * focal as usize)
         .sum();
     println!("result: {:?}", result);

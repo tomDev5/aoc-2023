@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashSet};
+use std::collections::HashSet;
 
 use itertools::Itertools;
 
@@ -80,12 +80,11 @@ impl MirrorMaze {
             stack.extend(
                 element
                     .get_directions(current_direction)
-                    .into_iter()
                     .filter_map(|d| Some((current_coordinates.move_to(&d)?, d))),
             );
         }
 
-        visitation_log.into_iter().map(|(c, _d)| c).unique()
+        visitation_log.into_iter().map(|(c, _)| c).unique()
     }
 
     fn get(&self, coordinates: Coordinates) -> Option<Element> {

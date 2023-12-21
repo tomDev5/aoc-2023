@@ -1,12 +1,14 @@
 use itertools::Itertools;
 
 pub fn find_almost_mirror_line(matrix: &Vec<Vec<char>>, imperfections: usize) -> Option<usize> {
-    for line_index in 1..matrix.len() {
-        if verify_almost_mirror_line(matrix, line_index, imperfections)? {
-            return Some(line_index);
-        }
-    }
-    None
+    matrix
+        .iter()
+        .enumerate()
+        .skip(1)
+        .find(|&(line_index, _)| {
+            verify_almost_mirror_line(matrix, line_index, imperfections).unwrap_or(false)
+        })
+        .map(|(line_index, _)| line_index)
 }
 
 pub fn verify_almost_mirror_line(
@@ -18,11 +20,11 @@ pub fn verify_almost_mirror_line(
 
     let above_lines = matrix
         .get(line - mirrored_lines..line)?
-        .into_iter()
+        .iter()
         .collect_vec();
     let below_lines = matrix
         .get(line..line + mirrored_lines)?
-        .into_iter()
+        .iter()
         .rev()
         .collect_vec();
     let mut diff_counter = 0;

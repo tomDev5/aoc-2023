@@ -11,7 +11,7 @@ fn main() {
         .filter_map(|line| line.split_whitespace().collect_tuple())
         .map(|(line, hash_groups)| {
             (
-                (0..5).into_iter().map(|_| line).join("?"),
+                (0..5).map(|_| line).join("?"),
                 hash_groups
                     .split(',')
                     .filter_map(|n| n.parse::<usize>().ok())
