@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use itertools::Itertools;
 
 use crate::{coordinates::Coordinates, direction::Direction, mirror_maze::MirrorMaze};
@@ -19,11 +17,7 @@ fn main() {
             .collect_vec(),
     );
 
-    let coordinates = mirror_maze.get_passed_coordinates(
-        &mut HashSet::new(),
-        Coordinates::new(0, 0),
-        Direction::Right,
-    );
+    let coordinates = mirror_maze.get_passed_coordinates(Coordinates::new(0, 0), Direction::Right);
 
-    println!("{:?}", coordinates.len());
+    println!("{:?}", coordinates.count());
 }

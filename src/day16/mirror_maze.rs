@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 
 use itertools::Itertools;
 
@@ -23,85 +23,69 @@ impl MirrorMaze {
     }
 
     #[allow(dead_code)]
-    pub fn get_maximal_number_of_passed_coordinates(&self) -> Option<usize> {
-        [
-            (0..self.maze.len())
-                .map(|line_index| {
-                    self.get_passed_coordinates(
-                        &mut HashSet::new(),
-                        Coordinates::new(line_index, 0),
-                        Direction::Right,
-                    )
-                    .len()
-                })
-                .max()?,
-            (0..self.maze.len())
-                .map(|line_index| {
-                    self.get_passed_coordinates(
-                        &mut HashSet::new(),
-                        Coordinates::new(line_index, self.maze[line_index].len() - 1),
-                        Direction::Right,
-                    )
-                    .len()
-                })
-                .max()?,
-            (0..self.maze[0].len())
-                .map(|column_index| {
-                    self.get_passed_coordinates(
-                        &mut HashSet::new(),
-                        Coordinates::new(0, column_index),
-                        Direction::Down,
-                    )
-                    .len()
-                })
-                .max()?,
-            (0..self.maze[0].len())
-                .map(|column_index| {
-                    self.get_passed_coordinates(
-                        &mut HashSet::new(),
-                        Coordinates::new(self.maze.len() - 1, column_index),
-                        Direction::Down,
-                    )
-                    .len()
-                })
-                .max()?,
-        ]
-        .into_iter()
-        .max()
+    pub fn get_maximal_number_of_passed_coordinates(&self) -> usize {
+        let left = (0..self.maze.len()).map(|line_index| {
+            self.get_passed_coordinates(Coordinates::new(line_index, 0), Direction::Right)
+                .count()
+        });
+        let right = (0..self.maze.len()).map(|line_index| {
+            self.get_passed_coordinates(
+                Coordinates::new(line_index, self.maze[0].len()),
+                Direction::Right,
+            )
+            .count()
+        });
+        let top = (0..self.maze[0].len()).map(|column_index| {
+            self.get_passed_coordinates(Coordinates::new(0, column_index), Direction::Right)
+                .count()
+        });
+        let bottom = (0..self.maze[0].len()).map(|column_index| {
+            self.get_passed_coordinates(
+                Coordinates::new(self.maze.len() - 1, column_index),
+                Direction::Right,
+            )
+            .count()
+        });
+        left.chain(right)
+            .chain(top)
+            .chain(bottom)
+            .max()
+            .unwrap_or(0)
     }
 
     pub fn get_passed_coordinates(
         &self,
-        visitation_log: &mut HashSet<(Coordinates, Direction)>,
         from: Coordinates,
         direction: Direction,
-    ) -> Vec<Coordinates> {
+    ) -> impl Iterator<Item = Coordinates> + '_ {
         let mut stack = Vec::new();
         stack.push((from, direction));
 
-        let mut passed_coordinates = vec![];
+        let mut visitation_log = HashSet::new();
 
-        while let Some((current_coordinates, current_direction)) = stack.pop() {
+        loop {
+            let Some((current_coordinates, current_direction)) = stack.pop() else {
+                break;
+            };
+
             if visitation_log.contains(&(current_coordinates, current_direction)) {
                 continue;
             }
 
+            let Some(element) = self.get(current_coordinates) else {
+                continue;
+            };
+
             visitation_log.insert((current_coordinates, current_direction));
-
-            if let Some(element) = self.get(current_coordinates) {
-                passed_coordinates.push(current_coordinates);
-
-                for (next_direction, next_coordinates) in element
+            stack.extend(
+                element
                     .get_directions(current_direction)
                     .into_iter()
-                    .filter_map(|d| Some((d, current_coordinates.move_to(&d)?)))
-                {
-                    stack.push((next_coordinates, next_direction));
-                }
-            }
+                    .filter_map(|d| Some((current_coordinates.move_to(&d)?, d))),
+            );
         }
 
-        passed_coordinates.into_iter().unique().collect_vec()
+        visitation_log.into_iter().map(|(c, _d)| c).unique()
     }
 
     fn get(&self, coordinates: Coordinates) -> Option<Element> {
