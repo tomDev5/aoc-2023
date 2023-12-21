@@ -1,6 +1,6 @@
 use crate::direction::Direction;
 
-#[derive(Eq, PartialEq, Debug, Default, Clone, Copy, Hash)]
+#[derive(Eq, PartialEq, Debug, Default, Clone, Copy, Hash, PartialOrd, Ord)]
 pub struct Coordinates(pub usize, pub usize);
 
 impl Coordinates {
