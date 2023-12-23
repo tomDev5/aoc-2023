@@ -11,5 +11,5 @@ fn main() {
             .map(|line| line.chars().filter_map(|c| c.to_digit(10))),
     );
 
-    println!("result: {:?}", heat_map.get_minimal_heat_loss::<1, 3>());
+    println!("result: {:?}", heat_map.get_minimal_heat_loss::<4, 10>());
 }
