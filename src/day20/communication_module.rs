@@ -25,6 +25,14 @@ impl CommunicationModule {
         })
     }
 
+    pub fn get_destination(&self) -> &Vec<String> {
+        match self {
+            CommunicationModule::FlipFlop(_, destinations) => destinations,
+            CommunicationModule::Conjunction(_, destinations) => destinations,
+            CommunicationModule::Broadcast(destinations) => destinations,
+        }
+    }
+
     /// send a pulse the the module, get a list of modules and pulses to send to them
     pub fn send_pulse(&mut self, from: String, pulse: Pulse) -> Vec<(String, Pulse)> {
         let mut send = Vec::new();
