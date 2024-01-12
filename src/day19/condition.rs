@@ -1,14 +1,14 @@
 use itertools::Itertools;
 
 use crate::{action::Action, category::Category, part::Part};
-use std::cmp::Ordering;
+use std::{cmp::Ordering, fmt::Debug};
 
 #[derive(Debug, Clone)]
 pub struct Condition {
-    ordering: Ordering,
-    category: Category,
-    rhs: usize,
-    action: Action,
+    pub ordering: Ordering,
+    pub category: Category,
+    pub rhs: usize,
+    pub action: Action,
 }
 
 impl Condition {
@@ -17,6 +17,20 @@ impl Condition {
             Some(self.action.clone())
         } else {
             None
+        }
+    }
+
+    pub fn get_negative(&self) -> Self {
+        let rhs = match self.ordering {
+            Ordering::Less => self.rhs - 1,
+            Ordering::Greater => self.rhs + 1,
+            Ordering::Equal => unreachable!(),
+        };
+        Self {
+            ordering: self.ordering.reverse(),
+            category: self.category,
+            rhs,
+            action: self.action.clone(),
         }
     }
 }

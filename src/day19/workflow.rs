@@ -4,8 +4,8 @@ use crate::{action::Action, condition::Condition, part::Part};
 
 #[derive(Debug, Clone)]
 pub struct Workflow {
-    conditions: Vec<Condition>,
-    default: Action,
+    pub conditions: Vec<Condition>,
+    pub default: Action,
 }
 
 impl Workflow {
