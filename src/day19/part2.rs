@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    ops::RangeInclusive,
-};
+use std::{cmp::Ordering, collections::HashMap, iter, ops::RangeInclusive};
 
 use condition::Condition;
 use itertools::Itertools;
@@ -30,103 +27,97 @@ fn main() {
         })
         .collect();
 
-    let mut total = 0;
-    let paths = get_all_paths(&workflows, "in".to_string());
-    for path in paths {
-        let mut possible_ranges = HashMap::from([
-            (Category::ExtremelyCoolLooking, (1..=4000usize)),
-            (Category::Musical, (1..=4000usize)),
-            (Category::Aerodynamic, (1..=4000usize)),
-            (Category::Shiny, (1..=4000usize)),
-        ]);
-        for condition in &path {
-            match condition.ordering {
-                std::cmp::Ordering::Less => {
-                    let range = possible_ranges
-                        .get_mut(&condition.category)
-                        .expect("Category not found");
-                    *range = *range.start()..=usize::min(condition.rhs - 1, *range.end());
-                }
-                std::cmp::Ordering::Greater => {
-                    let range = possible_ranges
-                        .get_mut(&condition.category)
-                        .expect("Category not found");
-                    *range = usize::max(condition.rhs + 1, *range.start())..=*range.end();
-                }
-                std::cmp::Ordering::Equal => unreachable!(),
-            };
-        }
-
-        let a = possible_ranges
-            .into_iter()
-            .map(|(_, h)| h.end() + 1 - h.start())
-            .collect_vec();
-        println!("{a:?}");
-        total += a.into_iter().product::<usize>();
-    }
-
-    println!("{:?}", total);
+    println!(
+        "{:?}",
+        get_possible_combination_count(&workflows, 1..=4000usize)
+    );
 }
 
+fn get_possible_combination_count(
+    workflows: &HashMap<String, Workflow>,
+    default_range: RangeInclusive<usize>,
+) -> usize {
+    get_all_paths(workflows, "in".to_string())
+        .into_iter()
+        .map(|path| {
+            let possible_ranges = path.iter().fold(
+                HashMap::from([
+                    (Category::ExtremelyCoolLooking, default_range.clone()),
+                    (Category::Musical, default_range.clone()),
+                    (Category::Aerodynamic, default_range.clone()),
+                    (Category::Shiny, default_range.clone()),
+                ]),
+                |mut possible_ranges, condition| {
+                    match condition.ordering {
+                        Ordering::Less => {
+                            let range = possible_ranges
+                                .get_mut(&condition.category)
+                                .expect("Category not found");
+                            *range = *range.start()..=usize::min(condition.rhs - 1, *range.end());
+                        }
+                        Ordering::Greater => {
+                            let range = possible_ranges
+                                .get_mut(&condition.category)
+                                .expect("Category not found");
+                            *range = usize::max(condition.rhs + 1, *range.start())..=*range.end();
+                        }
+                        Ordering::Equal => unreachable!(),
+                    };
+                    possible_ranges
+                },
+            );
+
+            possible_ranges
+                .into_values()
+                .map(|h| h.end() + 1 - h.start())
+                .product::<usize>()
+        })
+        .sum()
+}
+
+/// Returns all possible paths from the given workflow
 fn get_all_paths(workflows: &HashMap<String, Workflow>, workflow: String) -> Vec<Vec<Condition>> {
     let workflow = workflows.get(&workflow).expect("Workflow not found");
-    let mut paths: Vec<Vec<Condition>> = Vec::new();
-    for condition_index in 0..workflow.conditions.len() {
-        match &workflow.conditions[condition_index].action {
+    let mut paths = Vec::new();
+
+    // include workflow.default as a condition (which will always be True, as the minimal field value is 1)
+    let conditions = workflow
+        .conditions
+        .clone()
+        .into_iter()
+        .chain(iter::once(Condition {
+            ordering: Ordering::Less,
+            category: Category::ExtremelyCoolLooking,
+            rhs: usize::MAX,
+            action: workflow.default.clone(),
+        }))
+        .collect_vec();
+
+    // iterate all conditions
+    for condition_index in 0..conditions.len() {
+        // the state that allows a condition to be accepted - the condition itself is True, and all the previous conditions are False
+        let current_conditions = conditions[0..condition_index]
+            .iter()
+            .map(Condition::get_negative)
+            .chain(iter::once(conditions[condition_index].clone()));
+
+        match &conditions[condition_index].action {
             Action::Reject => continue,
             Action::Accept => {
-                // we found a path that accepts
-                // we need to add a path signaling this - with the condition and all the previous conditions as negatives
-                let mut path = vec![workflow.conditions[condition_index].clone()];
-                for previous_condition_index in 0..condition_index {
-                    path.push(workflow.conditions[previous_condition_index].get_negative())
-                }
-                paths.push(path);
+                paths.push(current_conditions.collect_vec());
             }
             Action::SendTo(next_workflow) => {
-                // we found a path that sends us to another workflow
-                // we need to add paths signaling this - every path from the next workflow, with the condition and all the previous conditions as negatives
-                let paths_from_next_workflow = get_all_paths(workflows, next_workflow.clone());
-                let mut paths_from_next_workflow_with_current = vec![];
-                for path_from_next_workflow in paths_from_next_workflow {
-                    let mut path_from_next_workflow = path_from_next_workflow;
-                    path_from_next_workflow.push(workflow.conditions[condition_index].clone());
-                    for previous_condition_index in 0..condition_index {
-                        path_from_next_workflow
-                            .push(workflow.conditions[previous_condition_index].get_negative());
-                    }
-                    paths_from_next_workflow_with_current.push(path_from_next_workflow);
-                }
+                let paths_from_next_workflow_with_current =
+                    get_all_paths(workflows, next_workflow.clone())
+                        .into_iter()
+                        .map(|mut path| {
+                            path.extend(current_conditions.clone());
+                            path
+                        })
+                        .collect_vec();
+
                 paths.extend(paths_from_next_workflow_with_current);
             }
-        }
-    }
-    // default - if all conditions are not met
-    match &workflow.default {
-        Action::Accept => {
-            let path = workflow
-                .conditions
-                .iter()
-                .map(|c| c.get_negative())
-                .collect_vec();
-            paths.push(path);
-        }
-        Action::Reject => {}
-        Action::SendTo(next_workflow) => {
-            let current_condition_negatives = workflow
-                .conditions
-                .iter()
-                .map(|c| c.get_negative())
-                .collect_vec();
-            let default_paths = get_all_paths(workflows, next_workflow.clone())
-                .into_iter()
-                .map(|mut path| {
-                    path.extend(current_condition_negatives.clone());
-                    path
-                })
-                .collect_vec();
-
-            paths.extend(default_paths);
         }
     }
     paths
