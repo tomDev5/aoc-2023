@@ -48,7 +48,7 @@ impl CommunicationModule {
 
                 if input_memory.values().all(|p| *p == Pulse::High) {
                     send.extend(destinations.iter_mut().map(|d| (d.clone(), Pulse::Low)))
-                } else if input_memory.values().all(|p| *p == Pulse::Low) {
+                } else {
                     send.extend(destinations.iter().map(|d| (d.clone(), Pulse::High)))
                 }
             }
