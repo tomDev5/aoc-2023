@@ -70,7 +70,6 @@ fn press_button(modules: &mut HashMap<String, CommunicationModule>) -> (usize, u
     let mut total_high = 0;
     while let Some((from, destination, pulse)) = pulses_to_send.pop() {
         let Some(module) = modules.get_mut(&destination) else {
-            total_high += 1;
             continue;
         };
         let next = module.send_pulse(from.to_string(), pulse);
