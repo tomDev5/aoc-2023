@@ -61,23 +61,21 @@ fn main() {
     println!("{:?}", total_low * total_high);
 }
 
-/// presses the button module, starting the chain.
-/// returns the number of pulses sent
 fn press_button(modules: &mut HashMap<String, CommunicationModule>) -> (usize, usize) {
     let mut pulses_to_send = vec![("button".to_string(), "broadcaster".to_string(), Pulse::Low)];
-
     let mut total_low = 1;
     let mut total_high = 0;
+
     while let Some((from, destination, pulse)) = pulses_to_send.pop() {
-        let Some(module) = modules.get_mut(&destination) else {
-            continue;
-        };
-        let next = module.send_pulse(from.to_string(), pulse);
-        total_low += next.iter().filter(|(_, p)| *p == Pulse::Low).count();
-        total_high += next.iter().filter(|(_, p)| *p == Pulse::High).count();
-        pulses_to_send.extend(next.into_iter().map(|(next_destination, next_pulse)| {
-            (destination.clone(), next_destination, next_pulse)
-        }));
+        if let Some(module) = modules.get_mut(&destination) {
+            let next = module.send_pulse(from.clone(), pulse);
+            total_low += next.iter().filter(|(_, p)| *p == Pulse::Low).count();
+            total_high += next.iter().filter(|(_, p)| *p == Pulse::High).count();
+            pulses_to_send.extend(
+                next.into_iter()
+                    .map(|(next_dest, next_pulse)| (destination.clone(), next_dest, next_pulse)),
+            );
+        }
     }
 
     (total_low, total_high)
