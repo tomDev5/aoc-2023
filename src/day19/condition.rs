@@ -20,6 +20,7 @@ impl Condition {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_negative(&self) -> Self {
         let rhs = match self.ordering {
             Ordering::Less => self.rhs - 1,

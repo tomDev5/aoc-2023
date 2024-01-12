@@ -78,24 +78,22 @@ fn get_possible_combination_count(
 /// Returns all possible paths from the given workflow
 fn get_all_paths(workflows: &HashMap<String, Workflow>, workflow: String) -> Vec<Vec<Condition>> {
     let workflow = workflows.get(&workflow).expect("Workflow not found");
-    let mut paths = Vec::new();
 
-    // include workflow.default as a condition (which will always be True, as the minimal field value is 1)
     let conditions = workflow
         .conditions
-        .clone()
-        .into_iter()
+        .iter()
+        .cloned()
         .chain(iter::once(Condition {
             ordering: Ordering::Less,
             category: Category::ExtremelyCoolLooking,
             rhs: usize::MAX,
             action: workflow.default.clone(),
         }))
-        .collect_vec();
+        .collect::<Vec<_>>();
 
-    // iterate all conditions
+    let mut paths = Vec::new();
+
     for condition_index in 0..conditions.len() {
-        // the state that allows a condition to be accepted - the condition itself is True, and all the previous conditions are False
         let current_conditions = conditions[0..condition_index]
             .iter()
             .map(Condition::get_negative)
@@ -103,22 +101,21 @@ fn get_all_paths(workflows: &HashMap<String, Workflow>, workflow: String) -> Vec
 
         match &conditions[condition_index].action {
             Action::Reject => continue,
-            Action::Accept => {
-                paths.push(current_conditions.collect_vec());
-            }
+            Action::Accept => paths.push(current_conditions.collect()),
             Action::SendTo(next_workflow) => {
-                let paths_from_next_workflow_with_current =
+                let paths_from_next_workflow_with_current: Vec<Vec<Condition>> =
                     get_all_paths(workflows, next_workflow.clone())
                         .into_iter()
                         .map(|mut path| {
                             path.extend(current_conditions.clone());
                             path
                         })
-                        .collect_vec();
+                        .collect();
 
                 paths.extend(paths_from_next_workflow_with_current);
             }
         }
     }
+
     paths
 }

@@ -9,6 +9,7 @@ pub struct Workflow {
 }
 
 impl Workflow {
+    #[allow(dead_code)]
     pub fn get_action(&self, part: &Part) -> Action {
         for condition in &self.conditions {
             match condition.get_action(part) {
