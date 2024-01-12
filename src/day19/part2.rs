@@ -34,10 +34,10 @@ fn main() {
     let paths = get_all_paths(&workflows, "in".to_string());
     for path in paths {
         let mut possible_ranges = HashMap::from([
-            (Category::ExtremelyCoolLooking, (0..=4000usize)),
-            (Category::Musical, (0..=4000usize)),
-            (Category::Aerodynamic, (0..=4000usize)),
-            (Category::Shiny, (0..=4000usize)),
+            (Category::ExtremelyCoolLooking, (1..=4000usize)),
+            (Category::Musical, (1..=4000usize)),
+            (Category::Aerodynamic, (1..=4000usize)),
+            (Category::Shiny, (1..=4000usize)),
         ]);
         for condition in &path {
             match condition.ordering {
@@ -56,10 +56,13 @@ fn main() {
                 std::cmp::Ordering::Equal => unreachable!(),
             };
         }
-        total += possible_ranges
+
+        let a = possible_ranges
             .into_iter()
             .map(|(_, h)| h.end() + 1 - h.start())
-            .product::<usize>();
+            .collect_vec();
+        println!("{a:?}");
+        total += a.into_iter().product::<usize>();
     }
 
     println!("{:?}", total);
