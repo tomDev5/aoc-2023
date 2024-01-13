@@ -5,7 +5,7 @@ use itertools::Itertools;
 use crate::communication_module::{CommunicationModule, Pulse};
 
 pub struct Circuit {
-    modules: HashMap<String, CommunicationModule>,
+    pub modules: HashMap<String, CommunicationModule>,
 }
 
 impl Circuit {
@@ -73,5 +73,15 @@ impl Circuit {
         }
 
         counter
+    }
+
+    #[allow(dead_code)]
+    pub fn find_modules_outputing_to(&self, to: &str) -> Vec<&String> {
+        self.modules
+            .iter()
+            .filter(|(_, module)| matches!(module, CommunicationModule::Conjunction(_, _)))
+            .filter(|(_, module)| module.get_destination().contains(&to.to_string()))
+            .map(|(name, _)| name)
+            .collect_vec()
     }
 }
