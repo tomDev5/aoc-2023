@@ -9,15 +9,19 @@ const INPUT: &str = include_str!("../../data/day20/input.txt");
 fn main() {
     let mut circuit = Circuit::new(INPUT).expect("Invalid input");
 
-    let mut semifinal_cycles: HashMap<String, (usize, usize)> = HashMap::from_iter([
-        ("sg".to_string(), (0, 0)),
-        ("lm".to_string(), (0, 0)),
-        ("dh".to_string(), (0, 0)),
-        ("db".to_string(), (0, 0)),
-    ]);
+    let mut semifinal_cycles: HashMap<String, (Option<usize>, Option<usize>)> =
+        HashMap::from_iter([
+            ("sg".to_string(), (None, None)),
+            ("lm".to_string(), (None, None)),
+            ("dh".to_string(), (None, None)),
+            ("db".to_string(), (None, None)),
+        ]);
 
     let mut i = 0;
-    while semifinal_cycles.values().any(|(_, b)| *b == 0) {
+    while semifinal_cycles
+        .values()
+        .any(|(a, b)| a.is_none() || b.is_none())
+    {
         i += 1;
         let pulse_counters = circuit.press_button();
 
@@ -29,10 +33,10 @@ fn main() {
                     continue;
                 }
 
-                if *first_hit_iteration == 0 {
-                    *first_hit_iteration = i;
-                } else if *second_hit_iteration == 0 {
-                    *second_hit_iteration = i;
+                if first_hit_iteration.is_none() {
+                    *first_hit_iteration = Some(i);
+                } else if second_hit_iteration.is_none() {
+                    *second_hit_iteration = Some(i);
                 }
             }
         }
@@ -41,6 +45,7 @@ fn main() {
     let result = semifinal_cycles
         .values()
         .cloned()
+        .filter_map(|(a, b)| Some((a?, b?)))
         .map(|(a, b)| usize::abs_diff(a, b))
         .fold(1, lcm);
 
