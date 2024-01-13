@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use crate::pulse::Pulse;
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Pulse {
+    High,
+    Low,
+}
 
 #[derive(Debug, Clone)]
 pub enum CommunicationModule {

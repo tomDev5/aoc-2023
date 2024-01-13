@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 
-use crate::{communication_module::CommunicationModule, pulse::Pulse};
+use crate::communication_module::{CommunicationModule, Pulse};
 
 pub struct Circuit {
     modules: HashMap<String, CommunicationModule>,
@@ -50,25 +50,28 @@ impl Circuit {
         Some(Self { modules })
     }
 
-    pub fn press_button(&mut self) -> (usize, usize) {
+    pub fn press_button(&mut self) -> HashMap<String, (usize, usize)> {
         let mut pulses_to_send =
             vec![("button".to_string(), "broadcaster".to_string(), Pulse::Low)];
-        let mut total_low = 1;
-        let mut total_high = 0;
+        let mut counter: HashMap<String, (usize, usize)> = HashMap::new();
 
-        while let Some((from, destination, pulse)) = pulses_to_send.pop() {
+        while let Some((source, destination, pulse_type)) = pulses_to_send.pop() {
+            let counter_entry = counter.entry(source.clone()).or_insert((0, 0));
+            match pulse_type {
+                Pulse::Low => counter_entry.0 += 1,
+                Pulse::High => counter_entry.1 += 1,
+            }
             if let Some(module) = self.modules.get_mut(&destination) {
-                let next = module.send_pulse(from.clone(), pulse);
-                total_low += next.iter().filter(|(_, p)| *p == Pulse::Low).count();
-                total_high += next.iter().filter(|(_, p)| *p == Pulse::High).count();
-                pulses_to_send.extend(
-                    next.into_iter().map(|(next_dest, next_pulse)| {
-                        (destination.clone(), next_dest, next_pulse)
+                let next = module.send_pulse(source.clone(), pulse_type);
+                pulses_to_send.splice(
+                    ..0,
+                    next.into_iter().map(|(next_destination, next_pulse)| {
+                        (destination.clone(), next_destination, next_pulse)
                     }),
                 );
             }
         }
 
-        (total_low, total_high)
+        counter
     }
 }
