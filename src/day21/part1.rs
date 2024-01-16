@@ -49,30 +49,21 @@ fn get_possible_ending_positions(
         }
         let mut moves = vec![];
         if line > 0 {
-            let new_move = (line - 1, column);
-            if map[new_move.0][new_move.1] != Element::Rock {
-                moves.push((new_move, distance + 1));
-            }
+            moves.push(((line - 1, column), distance + 1));
         }
         if line < map.len() - 1 {
-            let new_move = (line + 1, column);
-            if map[new_move.0][new_move.1] != Element::Rock {
-                moves.push((new_move, distance + 1));
-            }
+            moves.push(((line + 1, column), distance + 1));
         }
         if column > 0 {
-            let new_move = (line, column - 1);
-            if map[new_move.0][new_move.1] != Element::Rock {
-                moves.push((new_move, distance + 1));
-            }
+            moves.push(((line, column - 1), distance + 1));
         }
         if column < map[0].len() - 1 {
-            let new_move = (line, column + 1);
-            if map[new_move.0][new_move.1] != Element::Rock {
-                moves.push((new_move, distance + 1));
-            }
+            moves.push(((line, column + 1), distance + 1));
         }
         moves
+            .into_iter()
+            .filter(|((line, column), _)| map[*line][*column] != Element::Rock)
+            .collect_vec()
     })
     .filter(|(_, distance)| *distance == steps)
     .map(|(position, _)| position)
