@@ -1,4 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 use itertools::{iproduct, Itertools};
 
@@ -64,8 +64,8 @@ impl BrickStack {
     }
 
     pub fn get_disintegratable_bricks(&self) -> impl Iterator<Item = usize> + '_ {
-        let brick_to_supporting_bricks = self.brick_to_supporting_bricks();
-        let brick_to_supported_bricks = self.brick_to_supported_bricks();
+        let brick_to_supporting_bricks = self.get_brick_diff(-1);
+        let brick_to_supported_bricks = self.get_brick_diff(1);
 
         self.iterate_bricks().filter(move |brick_id| {
             let Some(supported_bricks) = brick_to_supported_bricks.get(brick_id) else {
@@ -84,7 +84,7 @@ impl BrickStack {
     fn get_points_of_brick(&self, z: usize) -> HashMap<usize, HashSet<(usize, usize)>> {
         let mut brick_id_to_points = HashMap::new();
         for (x, y) in iproduct!(0..self.inner[z].len(), 0..self.inner[z].len()) {
-            if let Some(brick_id) = self.inner[z][x][y] {
+            if let Some(brick_id) = self.get(z, x, y) {
                 brick_id_to_points
                     .entry(brick_id)
                     .or_insert_with(HashSet::new)
@@ -95,7 +95,7 @@ impl BrickStack {
     }
 
     fn is_empty_below(&self, z: usize, x: usize, y: usize) -> bool {
-        self.inner[z - 1][x][y].is_none()
+        self.get(z - 1, x, y).is_none()
     }
 
     fn move_bricks_up(&mut self, z: usize, brick_id: usize, points: HashSet<(usize, usize)>) {
@@ -105,40 +105,20 @@ impl BrickStack {
         }
     }
 
-    fn brick_to_supporting_bricks(&self) -> HashMap<usize, HashSet<usize>> {
-        let mut brick_to_supporting_bricks = HashMap::new();
-        for (z, x, y) in self.iterate_indexes() {
-            if let Some(brick_id) = self.inner[z][x][y] {
-                let bricks_below = match brick_to_supporting_bricks.entry(brick_id) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => v.insert(HashSet::new()),
-                };
-                if let Some(brick_below_id) = self.inner[z - 1][x][y] {
-                    if brick_below_id != brick_id {
-                        bricks_below.insert(brick_below_id);
-                    }
-                }
-            }
-        }
-        brick_to_supporting_bricks
-    }
-
-    fn brick_to_supported_bricks(&self) -> HashMap<usize, HashSet<usize>> {
-        let mut brick_to_supported_bricks = HashMap::new();
-        for (z, x, y) in self.iterate_indexes() {
-            if let Some(brick_id) = self.inner[z][x][y] {
-                let bricks_below = match brick_to_supported_bricks.entry(brick_id) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => v.insert(HashSet::new()),
-                };
-                if let Some(brick_above_id) = self.inner[z + 1][x][y] {
-                    if brick_above_id != brick_id {
-                        bricks_below.insert(brick_above_id);
-                    }
-                }
-            }
-        }
-        brick_to_supported_bricks
+    fn get_brick_diff(&self, diff: isize) -> HashMap<usize, HashSet<usize>> {
+        self.iterate_indexes()
+            .filter_map(|(z, x, y)| {
+                Some((
+                    self.get(z, x, y)?,
+                    self.get((z as isize + diff) as usize, x, y)?,
+                ))
+            })
+            .filter(|(brick_id, brick_above_id)| brick_id != brick_above_id)
+            .sorted_by_key(|(brick_id, _)| *brick_id)
+            .group_by(|(brick_id, _)| *brick_id)
+            .into_iter()
+            .map(|(brick_id, group)| (brick_id, group.map(|(_, brick_id)| brick_id).collect()))
+            .collect()
     }
 
     fn iterate_indexes(&self) -> impl Iterator<Item = (usize, usize, usize)> + '_ {
@@ -151,5 +131,9 @@ impl BrickStack {
 
     fn iterate_bricks(&self) -> impl Iterator<Item = usize> + '_ {
         0..self.number_of_bricks
+    }
+
+    fn get(&self, z: usize, x: usize, y: usize) -> Option<usize> {
+        *self.inner.get(z)?.get(x)?.get(y)?
     }
 }
