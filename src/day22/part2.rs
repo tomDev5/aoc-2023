@@ -10,5 +10,12 @@ fn main() {
     let mut stack = BrickStack::new(INPUT);
     stack.move_bricks().collect_vec();
 
-    println!("result: {:?}", stack.get_disintegratable_bricks().count());
+    println!(
+        "result: {:?}",
+        stack
+            .get_bricks_and_collateral()
+            .values()
+            .map(|set| set.len())
+            .sum::<usize>()
+    );
 }
