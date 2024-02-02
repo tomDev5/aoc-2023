@@ -62,4 +62,35 @@ impl Map {
         }
         .into_iter()
     }
+
+    pub fn get_next_condensed(
+        &self,
+        mut previous: (isize, isize),
+        mut point: (isize, isize),
+        end: (isize, isize),
+    ) -> impl Iterator<Item = ((isize, isize), usize)> + '_ {
+        let mut next = self
+            .get_next(point)
+            .filter(|p| *p != previous)
+            .filter(|p| {
+                let next = self.get_next(*p).collect_vec();
+                next.len() != 1 || next[0] != point || *p == end
+            })
+            .collect_vec();
+        let mut cost = 1;
+        while next.len() == 1 && next[0] != end {
+            previous = point;
+            point = next[0];
+            next = self
+                .get_next(point)
+                .filter(|p| *p != previous)
+                .filter(|p| {
+                    let next = self.get_next(*p).collect_vec();
+                    next.len() != 1 || next[0] != point || *p == end
+                })
+                .collect();
+            cost += 1;
+        }
+        next.into_iter().map(move |p| (p, cost))
+    }
 }
