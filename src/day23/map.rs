@@ -47,4 +47,19 @@ impl Map {
                 .0 as isize,
         ))
     }
+
+    pub fn get_next(&self, (y, x): (isize, isize)) -> impl Iterator<Item = (isize, isize)> + '_ {
+        match self.get((y, x)).expect("Bad coordinates") {
+            Tile::UpSlope => vec![(y - 1, x)],
+            Tile::DownSlope => vec![(y + 1, x)],
+            Tile::LeftSlope => vec![(y, x - 1)],
+            Tile::RightSlope => vec![(y, x + 1)],
+            Tile::Path => vec![(y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)]
+                .into_iter()
+                .filter(|point| self.get(*point).is_some_and(|tile| *tile != Tile::Forest))
+                .collect_vec(),
+            Tile::Forest => unreachable!("Cannot pass through forest"),
+        }
+        .into_iter()
+    }
 }
