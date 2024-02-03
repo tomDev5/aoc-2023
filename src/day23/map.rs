@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use itertools::Itertools;
 use pathfinding::num_traits::ToPrimitive;
 
@@ -89,5 +91,17 @@ impl Map {
                 return next.into_iter().map(move |p| (p, cost));
             }
         }
+    }
+}
+
+impl Debug for Map {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for line in self.inner.iter() {
+            for tile in line.iter() {
+                write!(f, "{:?}", tile)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
