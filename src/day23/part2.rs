@@ -64,7 +64,7 @@ fn main() {
                     let valid_neighbor = point_to_node_index.contains_key(neighbor)
                         && !seen.contains(neighbor)
                         && !graph.contains_edge(
-                            *point_to_node_index.get(&neighbor).unwrap(),
+                            *point_to_node_index.get(neighbor).unwrap(),
                             *point_to_node_index.get(&point).unwrap(),
                         );
 
@@ -72,7 +72,7 @@ fn main() {
                 },
             );
             if let Some(path) = path {
-                let neighbor = path.last().unwrap().clone();
+                let neighbor = *path.last().unwrap();
                 seen.insert(neighbor);
                 graph.add_edge(
                     *point_to_node_index.get(&point).unwrap(),
@@ -92,7 +92,6 @@ fn main() {
             0,
             None
         )
-        .into_iter()
         .map(|path| {
             path.windows(2)
                 .map(|w| graph.edges_connecting(w[0], w[1]).next().unwrap().weight())
