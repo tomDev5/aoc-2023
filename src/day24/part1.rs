@@ -20,36 +20,30 @@ fn main() {
             let m = (first_point.1 - second_point.1) / (first_point.0 - second_point.0);
             let position_where_x_is_zero = -hailstone.position.0 / hailstone.velocity.0;
             let b = position_where_x_is_zero * hailstone.velocity.1 + hailstone.position.1;
-            (m, b, hailstone.position.0, hailstone.velocity.0)
+            (m, b, hailstone)
         })
         .combinations(2)
         .filter_map(|hailstones| hailstones.into_iter().collect_tuple())
-        .filter_map(
-            |((m1, b1, start_x1, x1_velocity), (m2, b2, start_x2, x2_velocity))| {
-                let (diff_m, diff_b) = (m1 - m2, b1 - b2);
+        .filter_map(|((m1, b1, hailstone1), (m2, b2, hailstone2))| {
+            let (diff_m, diff_b) = (m1 - m2, b1 - b2);
 
-                if diff_m == 0.0 {
-                    return None;
-                }
+            if diff_m == 0.0 {
+                return None;
+            }
 
-                let x_intersection = -diff_b / diff_m;
-                let y_intersection = m1 * x_intersection + b1;
+            let x_intersection = -diff_b / diff_m;
+            let y_intersection = m1 * x_intersection + b1;
 
-                if (x_intersection < start_x1 && x1_velocity > 0.0)
-                    || (x_intersection > start_x1 && x1_velocity < 0.0)
-                {
-                    return None;
-                }
+            if (x_intersection < hailstone1.position.0 && hailstone1.velocity.0 > 0.0)
+                || (x_intersection > hailstone1.position.0 && hailstone1.velocity.0 < 0.0)
+                || (x_intersection < hailstone2.position.0 && hailstone2.velocity.0 > 0.0)
+                || (x_intersection > hailstone2.position.0 && hailstone2.velocity.0 < 0.0)
+            {
+                return None;
+            }
 
-                if (x_intersection < start_x2 && x2_velocity > 0.0)
-                    || (x_intersection > start_x2 && x2_velocity < 0.0)
-                {
-                    return None;
-                }
-
-                Some((x_intersection, y_intersection))
-            },
-        )
+            Some((x_intersection, y_intersection))
+        })
         .filter(|(x, y)| test_area.contains(x) && test_area.contains(y))
         .count();
 
