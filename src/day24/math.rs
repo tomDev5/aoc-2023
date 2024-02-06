@@ -16,3 +16,26 @@ pub fn get_intersection_point((m1, b1): (f64, f64), (m2, b2): (f64, f64)) -> Opt
 
     Some((x_intersection, y_intersection))
 }
+
+pub fn gaussian_elimination(mut coefficients: Vec<Vec<f64>>, mut rhs: Vec<f64>) -> Vec<f64> {
+    for i in 0..coefficients.len() {
+        // Select pivot
+        let pivot = coefficients[i][i];
+        // Normalize row i
+        for j in 0..coefficients.len() {
+            coefficients[i][j] /= pivot;
+        }
+        rhs[i] /= pivot;
+        // Sweep using row i
+        for k in 0..coefficients.len() {
+            if k != i {
+                let factor = coefficients[k][i];
+                for j in 0..coefficients.len() {
+                    coefficients[k][j] -= factor * coefficients[i][j];
+                }
+                rhs[k] -= factor * rhs[i];
+            }
+        }
+    }
+    rhs
+}

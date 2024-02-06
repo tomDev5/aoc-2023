@@ -4,6 +4,7 @@ use itertools::Itertools;
 use crate::{math::get_intersection_point, math::get_line_equation_from_points};
 
 mod hailstone;
+#[allow(dead_code)]
 mod math;
 
 const INPUT: &str = include_str!("../../data/day24/input.txt");
